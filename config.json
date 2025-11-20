@@ -2,12 +2,12 @@
     "title":"徐卿年的个人博客",
     "subTitle":"江湖夜雨十年灯。",
     "avatarUrl":"https://github.githubassets.com/favicons/favicon.svg",
-    "GMEEK_VERSION":"last"，
+    "GMEEK_VERSION":"last",
     "displayTitle":"Meekdai",
     "homeUrl":"http://blog.meekdai.com",
     "faviconUrl":"https://github.githubassets.com/favicons/favicon.svg",
     "email":"meekdai@163.com",
-    "startSite":"11/20/2025"，
+    "startSite":"11/20/2025",
     "onePageListNum":15,
     "singlePage":["about"],
     "iconList":{"music":"M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z"},
