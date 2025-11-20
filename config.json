@@ -24,7 +24,7 @@
     "script": "",
     "head": "",
     "allHead": "",
-    "indexStyle": "body { font-size: 22px; } .post-content { font-size: 20px; line-height: 1.8; }",
+    "indexStyle": "body { font-size: 18px; } .post-content { font-size: 16px; line-height: 1.8; }",
     "indexScript": "",
     "showPostSource": 1,
     "rssSplit": "sentence",
