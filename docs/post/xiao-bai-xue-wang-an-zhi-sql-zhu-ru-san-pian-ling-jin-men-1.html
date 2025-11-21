@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="”sql注入，狗都不学，实战能有啥用？“
+切勿好高骛远。">
+<meta property="og:title" content="小白学网安之sql注入三篇领进门1">
+<meta property="og:description" content="”sql注入，狗都不学，实战能有啥用？“
+切勿好高骛远。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-sql-zhu-ru-san-pian-ling-jin-men-1.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>小白学网安之sql注入三篇领进门1</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">小白学网安之sql注入三篇领进门1</h1>
+<div class="title-right">
+    <a href="https://JiangHuYeYu001.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/JiangHuYeYu001/JiangHuYeYu001.github.io/issues/3" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>”sql注入，狗都不学，实战能有啥用？“<br>
+切勿好高骛远。sql注入的思想是web渗透的基础。类似的思路通用在前端测试，真实渗透场景之中。而且谁知道内网有多少sql注入的漏洞呢（edusrc,说的就素你）<br>
+绝大多数web安全的基础都是代码审计。任何一个漏洞都要对其原理了解透彻。sql注入是基于对mysql数据库的一定了解和掌握而来。作为一个尽职尽责的小白向教程，笔者将在另一篇中讲述网站搭建与mysql入门作为本篇的前置。<br>
+我们从一个简单的场景开始。在2003年的第一场雪飘落时，小明正上网查博客，发现了一个url:<br>
+<a href="https://website.uirer/blog?id=1" rel="nofollow">https://website.uirer/blog?id=1</a><br>
+小明不懂得什么是网络安全，但是作为网页开发者，他猜想后端处理博文查询的语句是这样的：<br>
+SELECT * from blog where id=1 and private=0 LIMIT 1;<br>
+在 MySQL 中，LIMIT 1 是 LIMIT 语法的简化形式，核心作用是 只返回查询结果中的前 1 条记录。<br>
+LIMIT 有两种常用格式：<br>
+LIMIT  行数 ：省略 “偏移量” 时，默认偏移量为 0（即从第 1 条记录开始），表示“返回前 N 条记录”，（如小明猜想的LIMIT 1）；<br>
+LIMIT 偏移量, 行数：即之前讲的 “跳过前 X 条，返回 Y 条”（如 LIMIT 1,1）<br>
+因此，LIMIT 1 等价于 LIMIT 0, 1，表示：<br>
+偏移量为 0  → 从第 1 条记录开始（不跳过任何记录）；<br>
+行数为 1  → 只返回 1 条记录。<br>
+上面这条SQL语句正在从blog表中查找一条记录：该记录对应的文章id编号为1，且private列的值设为0（private列值为0表示该文<br>
+章可公开查看），同时该语句将查询结果限制为仅返回一条匹配记录。<br>
+小明随手把id改成2，url变成<a href="https://website.uirer/blog?id=2" rel="nofollow">https://website.uirer/blog?id=2</a><br>
+可恶，站长不让我看，弹出403，莫非有什么独家私藏？<br>
+猜想到后端的样子，小明兴致勃勃的尝试了一下把url小小的改造：<br>
+<a href="https://website.thm/blog?id=2;--" rel="nofollow">https://website.thm/blog?id=2;--</a><br>
+也就是id传为2；--这个东西。<br>
+2003年的此时此刻，博客的站长心地善良，丝毫没有对攻击者有什么防范，没有过滤掉;和-这种特殊字符。<br>
+于是后端语句变成了<br>
+SELECT * from blog where id=2;-- and private=0 LIMIT 1;<br>
+URL中的分号表示SQL语句的结束，而两个连字符会使其后的所有内容都被视为注释。实际<br>
+上，通过这种操作，你运行的查询就只是：<br>
+SELECT * from blog where id=2;--<br>
+不管是不是私密的，小明都发现了id=2的博文，在无意识之中完成了一次黑客攻击。2003年的互联网大量充斥着如此简单机械的漏洞。小明上报给了站主，获得站主50元的感谢。<br>
+多年以后，面对全国网安大会汇报厅中黑压压的人群，小明想起了那个下午。2003年的冬天飘着雪，他随手打下了人生中第一个sql注入。<br>
+当然，本文叫做一篇领进门，不能停在这里。<br>
+小明执行的只是一种名为“带内SQL注入”（In-Band SQL Injection）的SQL注入漏洞示例；此类漏洞共分为三种类型，即带内注入、盲注（Blind）和带外注入（Out-of-Band），我们将在后续对其进行讨论。<br>
+闭合<br>
+笔者开头说，sql注入的思想是web渗透的基础。类似的思路通用。闭合就很典型。<br>
+在SQL注入中，“闭合”是突破应用程序原有SQL语句结构、使恶意注入代码被数据库正确解析执行的核心手段，其本质是通过构造特殊输入，打破原始SQL中用于界定字符串、参数或逻辑块的边界符号（如单引号、双引号、括号等），从而将注入的恶意代码“嵌入”到正常SQL语句中，成为可执行的指令。<br>
+废话不多说，直接上：<br>
+SELECT * FROM users WHERE username ='用户输入'<br>
+小明随便敲一下，输入为admin' OR '1'='1<br>
+拼接后的SQL会变成：<br>
+SELECT * FROM users WHERE username ='admin' OR '1'=1‘。此时，用户输入中的第一个'闭合了原始SQL中左侧的单引号，后续的OR '1'='1则成为有效的SQL逻辑，导致查询条件判断恒真，实现注入。<br>
+闭合的核心是“匹配并打破原始边界”，具体方法取决于原始SQL中使用的边界符号，常见场景包括：<br>
+单引号闭合<br>
+最常见的场景，原始SQL用单引号包裹用户输入（如字符串参数）。例如：<br>
+SELECT * FROM goods WHERE id ='用户输入'<br>
+用户输入1' OR 1=1 -- ，拼接后为：<br>
+SELECT * FROM goods WHERE id ='1'OR 1=1 --'。<br>
+其中，'闭合左侧单引号，OR 1=1添加恶意逻辑，-- 注释掉右侧剩余的单引号（避免语法错误）<br>
+双引号闭合<br>
+SELECT * FROM users WHERE name ="用户输入"4<br>
+用户输入test" UNION SELECT 1,2,3 --<br>
+拼接后为：<br>
+SELECT * FROM usersWHERE name ="test" UNION SELECT 1,2,3 --"<br>
+括号闭合<br>
+SELECT * FROM logs WHERE (id ='用户输入')<br>
+用户输入 1') OR 1=1 --<br>
+拼接后为：<br>
+SELECT * FROM logs WHERE (id ='1')OR 1=1 --')<br>
+混合符号闭合<br>
+复杂场景中可能存在多种符号组合（如引号+括号），例如：<br>
+SELECT * FROM user WHERE (name ="用户输入") AND status=1<br>
+用户输入admin") OR 1=1 --<br>
+拼接后为：<br>
+SELECT * FROM user WHERE (name="admin") OR 1=1 --") AND status=1<br>
+闭合是SQL注入的“敲门砖”——它通过打破原始SQL的边界规则，将用户输入从“数据”转化为“可执行的SQL指令”。没有正确的闭合，所有注入逻辑都无法被数据库解析，注入也就无从谈起。因此，理解闭合的原理、掌握不同场景下的闭合技巧，是分析和利用SQL注入漏洞的核心能力。<br>
+类型判断：字符/数字<br>
+在SQL注入中，字符型注入和数字型注入的核心区别在于用户输入在原始SQL语句中是否被字符边界符号（如单引号、双引号）包裹，这直接决定了注入的构造方式和判断方法。<br>
+两者最根本的区别，决定了注入的“起点”。<br>
+例如，查询用户ID的场景，数字型注入原始SQL可能是：<br>
+SELECT * FROM users WHERE id = 用户输入; --<br>
+输入直接作为数字，无引号。<br>
+当用户输入为1时，SQL为<br>
+SELECT * FROM users WHERE id = 1;；<br>
+输入为2时，SQL为<br>
+SELECT * FROM users WHERE id = 2;。<br>
+对于字符型注入，有<br>
+SELECT * FROM users WHERE username ='用户输入'; -- 输入被单引号包裹<br>
+当用户输入为admin时，SQL为<br>
+SELECT * FROM users WHERE username ='admin';；<br>
+若被双引号包裹，则是<br>
+SELECT * FROM users WHERE username ="admin";。<br>
+由于原始SQL结构的差异，两者的注入逻辑和闭合需求完全不同。<br>
+例如，针对数字型SQL SELECT * FROM users WHERE id = 用户输入;：注入输入1 OR 1=1，拼接后SQL为SELECT * FROM users WHERE id = 1 OR 1=1;（条件恒真，返回所有用户）；注入输入1 UNION SELECT 1,version(),3，拼接后可执行联合查询，获取数据库版本。<br>
+字符型注入：<br>
+必须先“闭合”原始SQL中的字符边界（如单引号），否则注入的逻辑会被当作字符串的<br>
+一部分，无法执行。<br>
+例如，针对字符型SQL SELECT * FROM users WHERE username ='用户输入';：<br>
+若直接输入admin OR 1=1，拼接后SQL为SELECT * FROM users WHERE username ='admin OR 1=1';（OR 1=1被当作字符串，无意义）；<br>
+正确做法是先闭合单引号：输入admin' OR '1'='1，拼接后SQL为SELECT * FROMusers WHERE username='admin' OR '1'='1';（OR '1'='1成为有效逻辑，条件恒真）。<br>
+当输入特殊字符（如单引号）时，两者的报错信息或页面响应差异明显，这是判断的关键依据。<br>
+数字型注入：<br>
+输入单引号（'）时，原始SQL会出现“数字格式错误”。<br>
+例如，输入1'，拼接后SQL为SELECT * FROM users WHERE id = 1';——数据库会报错 “无效的数字格式”（如MySQL提示You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to usenear ''1''），原因是单引号破坏了数字的语法规则。<br>
+字符型注入：<br>
+输入单引号（'）时，原始SQL会出现“字符串未闭合错误”。<br>
+例如，输入admin'，拼接后SQL为SELECT * FROM users WHERE username ='admin';——数据库会报错“未闭合的引号”（如MySQL提示You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''admin'''），原因是多了一个单引号，导致字符串边界不匹配。<br>
+如何判断类型？<br>
+核心思路是通过构造特殊输入，观察页面响应（报错信息、内容变化、状态码等），推断输入在SQL中的处理方式。具体步骤如下：<br>
+测试单引号（最常用方法）<br>
+向输入点（如URL参数、表单字段）输入单引号（'），观察响应：<br>
+若页面出现“未闭合的引号”“字符串语法错误” 等提示（如Unclosed quotation mark），则大概率是字符型注入（输入被引号包裹，单引号导致边界混乱）；若页面出现“无效数字”“数字格式错误” 等提示（如invalid number），则大概率是数字型注入（输入被当作数字，单引号破坏了数字语法）；<br>
+若页面无明显变化（可能被程序捕获错误并隐藏），则需进一步测试。<br>
+测试逻辑表达式（辅助判断）<br>
+向输入点输入简单的逻辑判断（如AND 1=1和AND 1=2），对比两次响应：<br>
+若输入AND 1=1时页面正常（或返回结果不变），输入AND 1=2时页面异常（如无结果、报错），则大概率是数字型注入。<br>
+原因：数字型SQL中，id = 原始值 AND 1=1条件成立（返回正常），id = 原始值 AND1=2条件不成立（返回异常）。<br>
+例如，原始输入为1，注入1 AND 1=1后SQL有效，注入1 AND 1=2后SQL条件为假。<br>
+若输入AND 1=1和AND 1=2时页面无差异（均正常或均异常），则大概率是字符型注入。<br>
+原因：字符型SQL中，未闭合引号时，AND 1=1会被当作字符串的一部分，不影响SQL逻辑。例如，输入admin AND 1=1，拼接后SQL为SELECT * FROM users WHERE username ='admin AND 1=1';，逻辑未改变。<br>
+测试边界符号（针对字符型的细分）<br>
+若判断为字符型，可进一步测试具体的边界符号（单引号/双引号/括号）：<br>
+输入双引号（"），若报错“未闭合的双引号”，则是双引号包裹的字符型；输入')，若报错消失或逻辑变化，可能是( '输入' )形式的嵌套（需同时闭合引号和括<br>
+号）。<br>
+总结<br>
+判断的关键是通过单引号测试观察报错类型，结合逻辑表达式的响应差异，最终确定注入类型——这是后续构造有效注入代码的前提。</p>
+<p>/慢慢更新完</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://JiangHuYeYu001.github.io">徐卿年的个人博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/20/2025"!=""){
+    var startSite=new Date("11/20/2025");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+
+
+
+</script>
+
+
+</html>
