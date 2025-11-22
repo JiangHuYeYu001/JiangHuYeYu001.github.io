@@ -76,8 +76,17 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <div class="markdown-body" id="postBody"><p>前言：真实渗透和稍微有难度的ctf题目中，文件上传和文件包含往往是组合拳。两者密不可分。<br>
 先引入一个一句话木马：<br>
 [?php eval($_POST[w]);?]<br>
-这是一句php语言，中括号的地方本来应该是&lt;和&gt;,但是会被吞。笔者暂时没找到处理这个的方法。<br>
-关于这个木马的解析，单开了一篇。</p></div>
+这是一句php语言，中括号的地方本来应该是&lt;和&gt;<br>
+关于这个木马的解析，可以参考笔者的木马的第一篇。<br>
+先从一个裸奔状态的文件上传靶场讲起：<br>
+靶机为<a href="http://81.70.249.198:10098/%EF%BC%88%E6%99%9A%E4%B8%8A%E5%AE%B9%E6%98%93%E5%B4%A9%EF%BC%8C%E7%99%BD%E5%A4%A9%E8%BF%98%E8%A1%8C%EF%BC%89" rel="nofollow">http://81.70.249.198:10098/（晚上容易崩，白天还行）</a><br>
+在这个最粗糙的靶机中，我们随便右键桌面，然后写一个随便命名的txt文件，内容写成[?php eval($_POST[w]);?]，后缀改成php。<br>
+接下来上传进去之后，用中国蚁剑，哥斯拉，冰蝎等webshell工具连接上。<br>
+关于常用的webshell工具，我之后将把最简单的介绍发出来，包括他们的运行原理<br>
+（这里等待补图片中）<br>
+接下来就能随意翻看网站的目录了。<br>
+这是个很简单的作为引入的例子，绝大多数时候是需要一定绕过的技巧的。<br>
+第二篇将讲诉一个非常典型的混淆绕过的例子</p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 </div>
