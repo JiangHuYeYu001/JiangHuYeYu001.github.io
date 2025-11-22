@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="上文中，笔者对字符型和数字型sql注入进行了简叙，同时引入了闭合和利用回显判断错误的概念。">
+<meta property="og:title" content="小白学网安之sql注入五篇领进门2">
+<meta property="og:description" content="上文中，笔者对字符型和数字型sql注入进行了简叙，同时引入了闭合和利用回显判断错误的概念。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-sql-zhu-ru-wu-pian-ling-jin-men-2.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>小白学网安之sql注入五篇领进门2</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">小白学网安之sql注入五篇领进门2</h1>
+<div class="title-right">
+    <a href="https://JiangHuYeYu001.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/JiangHuYeYu001/JiangHuYeYu001.github.io/issues/5" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>上文中，笔者对字符型和数字型sql注入进行了简叙，同时引入了闭合和利用回显判断错误的概念。<br>
+看起来非常简单，不过，真实的应用场景中，手动注入sql是一件很烦扰的事情。下面我们引入更有难度的一些知识。<br>
+从逻辑判断角度理解万能密码<br>
+万能密码其实在现在这个年代没什么用。互联网的世界已经不是小明的2003年了。<br>
+上sql语句：<br>
+SELECT <em>FROM users WHERE username = '输入的用户名'AND passwd='输入的密码'<br>
+正常的情况下<br>
+无非是两个登录框，网页使用者输入用户密码，比如admin和admin123<br>
+如果攻击者获得了admin但是不知道密码：<br>
+用户名输入admin'--,密码输入随便一个什么。这样直接就可以登陆成功。<br>
+（没看懂的看第一篇）<br>
+使用逻辑关系<br>
+如果用户名和密码都不知道怎么办？<br>
+用户名：HAHAHA'OR 1=1 OR '1'='1'<br>
+密码：   XIXI<br>
+易得到，拼接之后的sql语句变成了<br>
+SELECT <em>FROM admin WHERE username= 'HAHAHA'OR 1=1 OR '1'='1'AND password = 'XIXI'<br>
+在sql语句之中，逻辑运算符的优先级是NOT&gt;AND&gt;OR<br>
+同一个优先级则默认从左到右运算。那么现在看看语句会怎么执行<br>
+没有NOT，先看AND，‘1’=‘1’AND password='XIXI','1'='1'肯定是对的，密码XIXI大概率要错喔。（可以乱写一串长一点的，不然被前端校验给ban的话，多少也有点尴尬。）<br>
+然后语句可以化简为username = '1' OR 1=1 OR FALSE，username = '1'应该FALSE 1=1肯定对，原句变成了FALSE OR TRUE OR FALSE<br>
+显然最后TRUE了<br>
+这里默认读者具有一定或且非的离散数学或者高中数学知识，不再解释。<br>
+接下来有一些类似的万能密码<br>
+（1）基础注入<br>
+' or 1=1 --<br>
+' or '1'='1<br>
+' or 1=1 #<br>
+' or 1=1/</em><br>
+' or ''='<br>
+' or 'a'='a<br>
+' or 1=1; --<br>
+admin' --<br>
+admin' or '1'='1' --<br>
+道理都一样，与或非，请看第一个例子<br>
+（3）注释符注入<br>
+' or 1=1 --<br>
+' or 1=1 #<br>
+' or 1=1/</em><br>
+admin' --<br>
+admin' #<br>
+假设有一个简单的登录验证 SQL 语句，用于验证用户输入的用户名和密码是否匹配数据库中的记录，其代码如下<br>
+SELECT * FROM users WHERE username = '$input_username' AND password = '$input_password';<br>
+其中，$input_username是从登录表单获取的用户名输入，$input_password是密码输入。<br>
+用户名输入 ' or 1=1/*     这里的/<em>表示注释符的开始，不会执行后面的语句，密码可以随意输入，例如输入 abc<br>
+将上述输入内容拼接到原始 SQL 语句中，会得到如下结果：<br>
+SELECT * FROM users WHERE username = '' or 1=1/</em>' AND password = 'abc';<br>
+原本的 SQL 查询需要同时验证用户名和密码是否匹配才能返回结果，但经过注入后，查询条件变成了恒为真的情况。这样，无论数据库中是否存在与输入的用户名和密码匹配的记录，该 SQL 查询都会返回 users表中的所有记录。<br>
+读者读到这里，会发现和上一篇讲的差不多嘛，半天下来也没什么新奇。<br>
+确实，万能密码的作用是让你再次过一遍上一篇目讲的，同时多看一些例子。<br>
+这里只要笔者愿意，大可以洋洋洒洒的给所有的万能密码列举完。不过作为新手向，我们要细嚼慢咽。<br>
+接下来讲解一下Union联合注入的知识。<br>
+我们掌握了最简单的闭合逻辑，字符串拼接和逻辑判断，接下来进入基于union语句的查询：<br>
+首先是union的用法，先上三个构造的union句子<br>
+' or 1=1 UNION SELECT null, database(), null --<br>
+' or 1=1 UNION SELECT null, user(), null --<br>
+' or 1=1 UNION SELECT null, @<a class="user-mention notranslate" data-hovercard-type="user" data-hovercard-url="/users/Version/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="https://github.com/Version">@Version</a>, null --<br>
+看不懂union怎么办？莫慌，看看如何详解<br>
+一、UNION的基本作用‌<br>
+UNION操作符用于合并两个或多个SELECT语句的结果集，它会自动去除重复的行。其主要作用是将来自不同表或查询的相关数据组合成一个统一的结果集。<br>
+二、UNION语法结构‌<br>
+SELECT column1, column2 FROM table1 UNION SELECT column1, column2 FROM table2;<br>
+使用这句话，就能一下查出两个句子<br>
+三、UNION与UNION ALL的区别‌<br>
+UNION‌：自动去除重复记录，性能相对较低<br>
+UNION ALL‌：保留所有记录包括重复项，执行效率更高<br>
+四、使用注意事项‌<br>
+排序操作只能在最后一个SELECT语句中使用ORDER BY<br>
+可以在各个SELECT语句中使用WHERE条件进行筛选<br>
+确保各查询结果的列顺序完全一致<br>
+考虑性能影响，在不需要去重时优先使用UNION ALL<br>
+五、示例说明‌<br>
+例如，需要同时查询员工表和离职员工表中的所有姓名：<br>
+SELECT name FROM employees UNION SELECT name FROM former_employees;<br>
+这将返回所有不重复的员工姓名，包括在职和离职人员。<br>
+好了，相信读者已经了解了基础的union用法。<br>
+假设存在一个简单的登录验证 SQL 语句，用于验证用户输入的用户名和密码是否匹配数据库中的记录，如下所示<br>
+SELECT * FROM users WHERE username = '$input_username' AND password = '$input_password';<br>
+其中，$input_username是从登录表单获取的用户名输入，$input_password是密码输入。<br>
+用户名输入 ' or 1=1 UNION SELECT null, database(), null --，密码可以随意输入，例如 random_password。<br>
+将上述输入内容拼接到原始 SQL 语句中，得到<br>
+SELECT * FROM users WHERE username = '' or 1=1 UNION SELECT null, database(), null --' AND password = 'random_password';<br>
+如何解读这句话：<br>
+我们先需要掌握一些sql语言本身的自带函数：<br>
+在Union联合注入中，你用到的 group_concat()、information_schema 系列表（schemata、tables、columns）以及 table_schema 等，是枚举数据库结构（库、表、列）的核心工具。<br>
+它们的作用类似于“数据库的地图”，帮助你从“不知道任何信息”逐步定位到目标数据（如用户密码）。下面逐一详细解释：<br>
+一、group_concat()：将多行结果“合并成一行”的函数<br>
+在SQL查询中，默认情况下，SELECT 语句会将每条匹配的记录单独作为一行返回。但在Union注入中，由于页面通常只显示一行结果（你的payload中用 1,XXX,3,4,5,6,7 对应回显列，只有一个位置显示数据），如果结果是多行，就会被截断或只显示第一条。<br>
+group_concat(字段名) 的作用是：将查询到的多行结果，按逗号分隔合并成一个字符串，放在一行中返回，刚好适配Union注入的“单行回显”场景。<br>
+示例：假设 information_schema.schemata 中有3个数据库：hotel、mysql、test，直接查询：<br>
+SELECT schema_name FROM information_schema.schemata;<br>
+cmd中将返回<br>
+hotel<br>
+mysql<br>
+test<br>
+而用 group_concat() 后：<br>
+SELECT group_concat(schema_name) FROM information_schema.schemata;<br>
+会合并成一行返回<br>
+hotel,mysql,test<br>
+这样你的payload才可以把爆的库都显示出来。<br>
+二、information_schema：MySQL的“系统元数据库”<br>
+information_schema 是MySQL自带的系统数据库，它不存储实际业务数据，而是存储了整个MySQL服务器的“元数据”（即“数据的数据”），包括：<br>
+所有数据库的名称；<br>
+每个数据库包含的表名；<br>
+每个表包含的列名（字段名）；<br>
+列的数据类型、权限等信息。<br>
+这就像一个“数据库的目录”，你可以通过查询它来获取整个数据库的结构，而Union注入的核心目标之一就是通过它枚举结构，最终获取敏感数据（如用户表的账号密码）。</p>
+<p>三、information_schema.schemata：存储“所有数据库名”的表<br>
+information_schema.schemata 是 information_schema 中的一个表，专门存储MySQL服务器中所有数据库的名称，其中最关键的字段是schema_name（即数据库名）。<br>
+作用：枚举所有数据库<br>
+你的payload union select 1,group_concat(schema_name),3,... from  information_schema.schemata 就是通过查询这个表，获取了所有数据库名<br>
+（hotel,information_schema,mysql,performance_schema）。可以理解为：schemata 表是“数据库的清单”，schema_name 是清单上的“数据库名称”。<br>
+举例子： 获取所有数据库<br>
+注入语句-1 union select 1,group_concat(schema_name),3,4,5,6,7 from information_schema.schemata<br>
+回显将为# hotel,information_schema,mysql,performance_schema<br>
+四、information_schema.tables：存储“所有表名”的表。information_schema.tables 存储了MySQL中所有表的信息，包括表属于哪个数据库、表名<br>
+是什么等。关键字段有：<br>
+table_schema：表所属的数据库名（与 schemata.schema_name 对应）；<br>
+table_name：表的名称。<br>
+作用：枚举某个数据库下的所有表。当你知道数据库名后（比如 hotel），可以通过 where table_schema='数据库名' 过滤，只查询该数据库下的表。<br>
+你的payload union select 1,group_concat(table_name),3,... from information_schema.tables where table_schema= 'hotel' 就是这个逻辑：指定查询 hotel 数据库下的表，最终得到 room 表。<br>
+举例子：获取hotel数据库的表名<br>
+-1 union select 1,group_concat(table_name), 3, 4, 5, 6, 7 from information_schema.tables where table_schema= 'hotel'<br>
+回显将为# room<br>
+五、table_schema：定位表所属数据库的“标识字段”<br>
+table_schema 是 information_schema.tables 和 information_schema.columns 表中的一个字段，用于表示当前记录（表或列）所属的数据库名。<br>
+它的作用类似于“标签”：<br>
+在 information_schema.tables 中，table_schema='hotel' 表示“这是 hotel 数据库下的表”；<br>
+在 information_schema.columns 中，table_schema='mysql' 表示“这是 mysql 数据库下的列”。<br>
+通过 where table_schema='目标数据库名'，可以精准过滤出你关心的数据库中的表或列，避 免查询到其他无关数据库的信息。<br>
+举例子：# 获取mysql数据库的表名<br>
+-1 union select 1,group_concat(table_name), 3, 4, 5, 6, 7 from information_schema.tables where table_schema= 'mysql<br>
+回显将为：#<br>
+column_stats,columns_priv,db,event,func,general_log,gtid_slave_pos,help_category,he<br>
+lp_keyword,help_relation,help_topic,host,index_stats,innodb_index_stats,innodb_tabl<br>
+e_stats,plugin,proc,procs_priv,proxies_priv,roles_mapping,servers,slow_log,table_st<br>
+ats,tables_priv,time_zone,time_zone_leap_second,time_zone_name,time_zone_transition<br>
+,time_zone_transition_type,user<br>
+六、information_schema.columns：存储“所有列名”的表<br>
+information_schema.columns 存储了MySQL中所有列（字段）的信息，关键字段有：<br>
+table_schema：列所属的数据库名；<br>
+table_name：列所属的表名；<br>
+column_name：列的名称（字段名）。<br>
+作用：枚举某个表下的所有列<br>
+当你知道数据库名和表名后（比如 mysql 数据库的 user 表），可以通过 where table_schema=<br>
+'数据库名' and table_name='表名' 过滤，查询该表下的所有列。<br>
+你的payload union select 1,group_concat(column_name),3,... from information_schema.columns where table_name= 'user' 就是查询 user 表的所有列，得到 Host,User,Password,... 等字段（这些是MySQL用户表的核心字段，包含登录账号和密码）。<br>
+举例子：</p>
+<h1>获取user表的列名</h1>
+<p>-1 union select 1,group_concat(column_name), 3, 4, 5, 6, 7 from information_schema.columns where table_name= 'user'<br>
+回显将为：#<br>
+Host,User,Password,Select_priv,Insert_priv,Update_priv,Delete_priv,Create_priv,Drop<br>
+<em>priv,Reload_priv,Shutdown_priv,Process_priv,File_priv,Grant_priv,References_priv,I<br>
+ndex_priv,Alter_priv,Show_db_priv,Super_priv,Create_tmp_table_priv,Lock_tables_priv<br>
+,Execute_priv,Repl_slave_priv,Repl_client_priv,Create_view_priv,Show_view_priv,Crea<br>
+te_routine_priv,Alter_routine_priv,Create_user_priv,Event_priv,Trigger_priv,Create</em><br>
+tablespace_priv,ssl_type,ssl_cipher,x509_issuer,x509_subject,max_questions,max_upda<br>
+tes,max_connections,max_user_connections,plugin,authentication_string,password_expi<br>
+red,is_role,default_role,max_statement_time<br>
+总结一下，以上几个函数，在Union注入中是协作的<br>
+你的整个注入过程，本质上是通过这些工具从“未知”到“已知”的逐步枚举，流程如下：</p>
+<ol>
+<li>用 information_schema.schemata + group_concat(schema_name) → 获取所有数据库名（如 hotel、mysql）；</li>
+<li>用 information_schema.tables + where table_schema='目标库' +<br>
+group_concat(table_name) → 获取目标数据库的表名（如 hotel 库的 room 表，mysql库的 user 表）；<br>
+3.用 information_schema.columns + where table_schema='目标库' and table_name='目标表'+ group_concat(column_name) → 获取目标表的列名（如 user 表的 User、Password<br>
+列）；</li>
+<li>最后直接查询目标列的数据（如 select user,password from mysql.user）→ 得到敏感信息。<br>
+这整个过程就像“查字典”：先查所有“字典名”（数据库），再查某个字典里的“章节名”<br>
+（表），再查章节里的“关键词”（列），最后找到关键词对应的“内容”（数据）。<br>
+接下来，我们来模拟一个场景：<br>
+小明想要再次攻破一个博客网站，并且指定使用union联合注入的方法。他想先嗅探一下这个表到底是什么东西。<br>
+URL头为<a href="https://website.thu/article?id=1" rel="nofollow">https://website.thu/article?id=1</a><br>
+小明先测<a href="https://website.thu/article?id=1%E2%80%98" rel="nofollow">https://website.thu/article?id=1‘</a><br>
+回显报错了，坐实sql注入漏洞存在<br>
+小明再测 <a href="https://website.thu/article?id=1" rel="nofollow">https://website.thu/article?id=1</a> UNION SELECT 1<br>
+回显报错，说UNION SELECT语句与原始SELECT查询的列数不同。<br>
+小明再测 <a href="https://website.thu/article?id=1" rel="nofollow">https://website.thu/article?id=1</a> UNION SELECT 1,2<br>
+报错一样<br>
+小明再测 <a href="https://website.thu/article?id=1" rel="nofollow">https://website.thu/article?id=1</a> UNION SELECT 1，2，3<br>
+成功了，错误信息已经消失，文章正在显示，但现在我们想显示我们的数据而不是这篇文章。<br>
+文章之所以会显示，是因为网站代码中的某个地方获取了返回的第一个结果并将其展示出来。<br>
+为了解决这个问题，小明需要让第一个查询不产生任何结果。只需将文章ID从1改为0就能轻<br>
+松做到这一点。<br>
+到这里，读者可能会大为困惑。切莫着急，我且说来：<br>
+article?id=1 里的article是一个mysql数据库中的表。而一个表可能有多少列是不知道的。<br>
+在union语句中，union select后面的列数和数据内容和前面要保持严格的一致。<br>
+两个查询返回的「列数」完全相等，且每一列的「数据类型」能兼容（比如左边是数字列，右边也得是数字 / 可转数字的类型）。<br>
+为什么SELECT *from where article id=1 union select 1会报错，我们为啥又要这样写呢？<br>
+这个问题的核心原因是 <strong><code class="notranslate">UNION</code> 操作符的语法规则限制</strong>——它要求左右两个查询返回的 <strong>结果集结构完全一致</strong>，包括「列数必须相同」和「对应列的数据类型兼容」。你遇到的报错，本质是「左右列数不匹配」导致的。</li>
+</ol>
+<h3>先把基础逻辑讲透：<code class="notranslate">UNION</code> 到底要求什么？</h3>
+<p><code class="notranslate">UNION</code> 的作用是「合并两个独立查询的结果集」，数据库要把两个结果集上下拼接，就必须满足一个前提：<br>
+<strong>两个查询返回的「列数」完全相等，且每一列的「数据类型」能兼容（比如左边是数字列，右边也得是数字/可转数字的类型）</strong>。/<br>
+举个生活例子：你要把两堆“盒子”叠在一起，左边一堆是3个盒子（对应3列），右边一堆只有1个盒子（对应1列），根本没法对齐拼接——数据库也是这个道理，列数不匹配就直接报错。</p>
+<h3>回到你的注入语句，一步步分析报错原因</h3>
+<p>你的原始语句（简化后）是：</p>
+<div class="highlight highlight-source-sql"><pre class="notranslate"><span class="pl-k">SELECT</span> <span class="pl-k">*</span> <span class="pl-k">FROM</span> article <span class="pl-k">WHERE</span> id <span class="pl-k">=</span> <span class="pl-c1">1</span> <span class="pl-k">UNION</span> <span class="pl-k">SELECT</span> <span class="pl-c1">1</span>;</pre></div>
+<p>我们拆成两部分看：</p>
+<h4>1. 左边查询（原查询）的列数</h4>
+<p><code class="notranslate">SELECT * FROM article WHERE id = 1</code> 中的 <code class="notranslate">*</code> 表示「查询 <code class="notranslate">article</code> 表的所有列」。<br>
+假设 <code class="notranslate">article</code> 表有 <strong>3列</strong>（比如 <code class="notranslate">id</code>、<code class="notranslate">title</code>、<code class="notranslate">content</code>），那么左边查询返回的结果集是「3列数据」（列数=3）。</p>
+<h4>2. 右边查询（注入的 <code class="notranslate">UNION SELECT</code>）的列数</h4>
+<p>你写的 <code class="notranslate">UNION SELECT 1</code> 只返回「1列数据」（列数=1）。</p>
+<h4>3. 报错的本质</h4>
+<p>左边3列 ≠ 右边1列，违反了 <code class="notranslate">UNION</code> 的列数匹配规则，数据库会直接抛出错误（比如 MySQL 会报 <code class="notranslate">The used SELECT statements have a different number of columns</code>）。</p>
+<h3>为什么要改成 <code class="notranslate">SELECT 1,2,3</code>？</h3>
+<p>不是必须写 <code class="notranslate">1,2,3</code>，而是要让「右边查询的列数 = 左边查询的列数」！</p>
+<ul>
+<li>如果 <code class="notranslate">article</code> 表有3列，右边就需要返回3列——<code class="notranslate">SELECT 1,2,3</code> 只是最简洁的写法（用任意数字、字符串都可以，比如 <code class="notranslate">SELECT 'a','b','c'</code>，只要列数对、数据类型兼容）；</li>
+<li>如果 <code class="notranslate">article</code> 表有4列，就需要写成 <code class="notranslate">SELECT 1,2,3,4</code>，否则还是会报错；</li>
+<li>注入时写 <code class="notranslate">1,2,3</code> 的核心目的是「探测原表的列数」：从 <code class="notranslate">SELECT 1</code> 开始试，报错就加一个数（<code class="notranslate">1,2</code>），再报错就再加（<code class="notranslate">1,2,3</code>），直到不报错——此时就知道原表的列数等于你写的数字个数。</li>
+</ul>
+<h3>补充：数据类型兼容的小细节（避免踩坑）</h3>
+<p>除了列数，对应列的「数据类型」也要能兼容：</p>
+<ul>
+<li>比如左边第一列是 <code class="notranslate">id</code>（整数类型），右边第一列就不能写 <code class="notranslate">SELECT 'abc',2,3</code>（字符串无法转整数），否则会报错；</li>
+<li>用 <code class="notranslate">1,2,3</code> 最安全，因为数字可以兼容大多数数据类型（字符串列会自动把数字转成字符串显示）。</li>
+</ul>
+<h3>总结</h3>
+<ul>
+<li>报错原因：<code class="notranslate">UNION</code> 要求左右查询列数一致，你写的 <code class="notranslate">SELECT 1</code> 列数不够；</li>
+<li><code class="notranslate">SELECT 1,2,3</code> 不是固定写法，只是「匹配原表列数」的简洁方案；</li>
+<li>注入时这么写的目的：探测原表列数，为后续获取数据库信息（比如查 <code class="notranslate">version()</code>、<code class="notranslate">database()</code>）做铺垫。<br>
+然而，union的故事并没有结束。<br>
+现在小明确定了article是一个具有三列的表，他输入，- 1 union select 1,database(),3，小明让前面的数据为- 1，那前面的内容就没有显示出来，返回的反而是我后面查询到的内容，为什么前面不是报错呢（肯定没有id=-1的文章啊），为什么后面的会显示出来</li>
+</ul>
+<ol>
+<li>原始查询为什么不报错？<br>
+假设原始的 SQL 语句可能是类似 SELECT 列1,列2,...,列7 FROM 表 WHERE id=参数（因为<br>
+你后续 UNION SELECT 有7列，说明原始查询也是7列，否则会报错）。<br>
+当你将“参数”改为 -1 时，原始查询变成了 SELECT 列1,列2,...FROM 表 WHERE id=-1。<br>
+这个语句本身是 语法正确的（没有违反 SQL 语法规则），数据库会正常执行它。只是如果你的表中 没有 id=-1 的记录，那么这个查询会返回 空结果集（即没有任何行），而不是报错。<br>
+数据库报错的场景通常是“语法错误”（如列数不匹配、关键字错误）或“逻辑错误”（如<br>
+除数为0），而“查询条件没有匹配到数据”是正常的执行结果（空集），不会报错。</li>
+<li>为什么最终显示的是后面 UNION SELECT 的内容？<br>
+UNION 操作符的作用是 合并两个结果集，并去除重复行（UNION ALL 则保留重复行）。合并的规则是：<br>
+如果第一个结果集有数据（多行），第二个结果集有数据，最终会显示“第一个结果集 + 第二个结果集”的所有行；<br>
+如果第一个结果集是空集（如你这里 id=-1 没有匹配到数据），第二个结果集有数据，最终会只显示“第二个结果集”的行。<br>
+小明的场景属于后者：<br>
+原始查询（id=-1）返回空集，而 UNION SELECT 1,database(),3 是一个有效的查询（3列，与原始查询列数一致），会返回一行数据（例如 1, 数据库名,3）。<br>
+因此，UNION 合并后的结果集就是这一行数据，应用程序在显示结果时，自然就只展示了这行来自 UNION SELECT 的内容。<br>
+总结<br>
+原始查询不报错：因为 id=-1 是合法条件，只是无匹配数据，返回空集（正常执行结果）；<br>
+显示 UNION SELECT 结果：因为原始查询为空集，UNION 合并后只剩下注入查询的结果，被应用程序返回。<br>
+这也是联合注入中常用的技巧：通过让原始查询返回空集（如 id=-1、id=0 等不存在的条件），确保注入的 UNION SELECT 结果能被清晰地显示出来。<br>
+铺垫都到这了，接下来，结合上文的所有内容，下一篇我们讲述彻底的渗透链.</li>
+</ol></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://JiangHuYeYu001.github.io">徐卿年的个人博客</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/20/2025"!=""){
+    var startSite=new Date("11/20/2025");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
