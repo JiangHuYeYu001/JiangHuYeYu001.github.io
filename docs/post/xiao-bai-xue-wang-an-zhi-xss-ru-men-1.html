@@ -10,13 +10,17 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="这个要看情况，正常延续AOSP默认加密标准的Android，是XTS模式的AES-256算法加密文件内容，CBC-CTS模式的AES-256算法加密文件名，再由系统生成一个唯一的用户CE凭证来实现解密。">
-<meta property="og:title" content="手机恢复出厂能防叔叔的取证恢复手段么">
-<meta property="og:description" content="这个要看情况，正常延续AOSP默认加密标准的Android，是XTS模式的AES-256算法加密文件内容，CBC-CTS模式的AES-256算法加密文件名，再由系统生成一个唯一的用户CE凭证来实现解密。">
+<meta name="description" content="前言：所谓的xss就是跨站脚本攻击，最大的危害是盗取用户的cookie（等补图）
+## 什么是cookie？
+Cookie 本质是服务器发给浏览器的小型文本文件（通常不超过 4KB），专门用来解决 HTTP 协议 “记不住用户” 的问题 ——HTTP 本身是 “无状态” 的，第一次和第二次访问服务器，服务器默认认不出是同一个人。">
+<meta property="og:title" content="小白学网安之xss入门1">
+<meta property="og:description" content="前言：所谓的xss就是跨站脚本攻击，最大的危害是盗取用户的cookie（等补图）
+## 什么是cookie？
+Cookie 本质是服务器发给浏览器的小型文本文件（通常不超过 4KB），专门用来解决 HTTP 协议 “记不住用户” 的问题 ——HTTP 本身是 “无状态” 的，第一次和第二次访问服务器，服务器默认认不出是同一个人。">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://JiangHuYeYu001.github.io/post/shou-ji-hui-fu-chu-chang-neng-fang-shu-shu-de-qu-zheng-hui-fu-shou-duan-me.html">
+<meta property="og:url" content="https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-xss-ru-men-1.html">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
-<title>手机恢复出厂能防叔叔的取证恢复手段么</title>
+<title>小白学网安之xss入门1</title>
 
 
 
@@ -49,7 +53,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 
 <body>
     <div id="header">
-<h1 class="postTitle">手机恢复出厂能防叔叔的取证恢复手段么</h1>
+<h1 class="postTitle">小白学网安之xss入门1</h1>
 <div class="title-right">
     <a href="https://JiangHuYeYu001.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
         <svg class="octicon" width="16" height="16">
@@ -57,7 +61,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
         </svg>
     </a>
     
-    <a href="https://github.com/JiangHuYeYu001/JiangHuYeYu001.github.io/issues/11" target="_blank" class="btn btn-invisible circle" title="Issue">
+    <a href="https://github.com/JiangHuYeYu001/JiangHuYeYu001.github.io/issues/18" target="_blank" class="btn btn-invisible circle" title="Issue">
         <svg class="octicon" width="16" height="16">
             <path id="pathIssue" fill-rule="evenodd"></path>
         </svg>
@@ -73,13 +77,15 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p>这个要看情况，正常延续AOSP默认加密标准的Android，是XTS模式的AES-256算法加密文件内容，CBC-CTS模式的AES-256算法加密文件名，再由系统生成一个唯一的用户CE凭证来实现解密。你设置屏幕PIN码的同时，会用基于你PIN码再生成一个AES-256密钥对用作加/解密用户CE凭证，在开机后输入正确PIN码会将其导入封闭容器内解密用户CE，之后用户CE会进入TEE环境内解密用户数据，最终的解密密钥在关机之前一直保存在内存中。</p>
-<p>从Android14开始想破解难度很高，因为外层还有一层增强的metadata分区作为元数据加密功能的基石，你想克隆闪存数据到仿真机运行穷举法破解出加密用户CE的PIN码，metadata不匹配system无法正常启动，拷贝metadata到仿真机是无效的。因为metadata记录有硬件唯一标识符，运行环境不同唯一标识符验证不起作用。</p>
-<p>所以，正常基于AOSP的类原生，但凡默认启用加密数据，而且你没有对此做出修改，在你恢复出厂后你的用户CE凭证、PIN码密钥对、metadata将格式化并刷新。警察能从你手机上恢复什么？由于旧的CE凭证和PIN码丢失，且已经生成了新的CE凭证，即使你手机没设置PIN码，叔叔能恢复的也只是一堆加密过的、杂乱无章的乱码数据罢了。<br>
-UI偏原生的厂家ROM，我目前知道是以前摩托罗拉和HTC，在Android10时代为了低性能设备的运行效率而让步，不按照AOSP的默认加密标准来做，它们把CE凭证和设置PIN码生成的密钥对采取固定生成，恢复出厂后不会重新生成新的，依旧是原先的CE凭证和密钥对。<br>
-蜘蛛手机这边，我知道的是魅族，它以前采用厂家统一CE凭证进行加/解密，任何型号的魅族手机只要拿到厂家用的CE凭证就能把恢复的数据解密，不知道现在咋样了。<br>
-默认数据不加密的应用：电话、闹钟、系统桌面UI、LatinIME、设置。<br>
-断电30分钟内存数据将全部丢失</p></div>
+<div class="markdown-body" id="postBody"><p>前言：所谓的xss就是跨站脚本攻击，最大的危害是盗取用户的cookie（等补图）</p>
+<h2>什么是cookie？</h2>
+<p>Cookie 本质是服务器发给浏览器的小型文本文件（通常不超过 4KB），专门用来解决 HTTP 协议 “记不住用户” 的问题 ——HTTP 本身是 “无状态” 的，第一次和第二次访问服务器，服务器默认认不出是同一个人。<br>
+当你第一次访问某个网站时，服务器会通过响应头把 Cookie 发给浏览器，浏览器会把它存在本地（内存或硬盘）；之后你再访问这个网站，浏览器会自动把对应的 Cookie 放进请求头带给服务器，服务器通过 Cookie 里的信息（比如会话 ID、用户标识），就能快速认出你，不用重复登录、不用重新设置偏好。<br>
+它的核心用途就是 “保存状态”：比如记住你的登录状态（下次打开网站直接登录）、购物车的商品、网页语言 / 主题偏好等；而且 Cookie 是和具体域名绑定的，只能被下发它的网站读取，不会被其他网站获取，保证了一定的安全性。</p>
+<h2>xss攻击场景</h2>
+<h3>a：北京 攻击者</h3>
+<h3>b：上海 受害者</h3>
+<h4>物理隔离。有个共性 都可以访问外网 。a就可以购买一个云服务器 。a精心构造js语句 发给b b点击以后 js语句就会把b的客户端cookie送给a所控制的云服务器</h4></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 </div>
