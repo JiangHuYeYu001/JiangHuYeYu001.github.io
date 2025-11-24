@@ -185,7 +185,8 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <span class="pl-ent">?&gt;</span></pre></div>
 </li>
 <li>渗透利用（直接传入绝对路径）：
-<pre class="notranslate"><code class="notranslate">http://target.com/lfi.php?file=/etc/passwd
+<pre class="notranslate"><code class="notranslate">
+http://target.com/lfi.php?file=/etc/passwd
 http://target.com/lfi.php?file=/var/log/nginx/access.log
 </code></pre>
 </li>
@@ -338,7 +339,23 @@ http://target.com/lfi.php?file=/var/log/nginx/access.log
 </li>
 </ol>
 <p>通过以上知识，可解决文件包含漏洞中“如何构造路径”的核心问题——本质上，LFI的利用就是“用正确的路径，找到可读取/可执行的目标文件”，而Linux的路径规则是实现这一目标的基础。<br>
-稍等一下，研究一下怎么补充图片再讲一下伪装马。</p></div>
+稍等一下，研究一下怎么补充图片再讲一下伪装马。</p>
+<h2>伪装马的最简单思路是图片马伪装。</h2>
+<h3>服务器解析文件 不是按照内容进行解析的 而是看后缀的 所以我们要保证我们上传的文件 后缀是能按照服务端解析的后缀 例如php 不能上传 内容是木马的 但后缀jpg的 这种只能按照图片进行解析</h3>
+<h3>校验你上传的文件后缀有没有恶意后缀</h3>
+<p>php aspx jsp<br>
+常见的混淆后缀有诸如php,pht,php1到php9,phtml,或混淆为图片马这样的。<br>
+在burp中抓包，修改文件头和马头</p>
+<h3>校验你上传的文件 有没有图片头</h3>
+<p>注意：任何文件都有头 比如 zip是pk头 比如png 是xpng 比如gif 是GIF89a等等<br>
+把自己的木马丰满一下 加上GIF89a</p>
+<h3>变形马知识 这里引进一句修改之后的木马:</h3>
+<div class="highlight highlight-text-html-php"><pre class="notranslate">&lt;script language = <span class="pl-s">"<span class="pl-s">php</span>"</span>&gt;@<span class="pl-en">eval</span>(<span class="pl-c1">_POST</span>[w]);&lt;/script&gt;</pre></div>
+<pre class="notranslate"><code class="notranslate">过滤php
+(适用于php7)
+&lt;?=eval($_POST[w]);
+</code></pre>
+<p>（之后补充上配图）</p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 </div>
