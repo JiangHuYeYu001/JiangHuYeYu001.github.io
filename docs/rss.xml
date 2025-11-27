@@ -1,5 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>徐卿年的个人博客</title><link>https://JiangHuYeYu001.github.io</link><description>江湖夜雨十年灯。</description><copyright>徐卿年的个人博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://JiangHuYeYu001.github.io</link></image><lastBuildDate>Mon, 24 Nov 2025 16:21:07 +0000</lastBuildDate><managingEditor>徐卿年的个人博客</managingEditor><ttl>60</ttl><webMaster>徐卿年的个人博客</webMaster><item><title>小白学网安之RCE入门1</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-RCE-ru-men-1.html</link><description>等待补充。</description><guid isPermaLink="true">https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-RCE-ru-men-1.html</guid><pubDate>Mon, 24 Nov 2025 01:45:24 +0000</pubDate></item><item><title>小白学网安之xss入门1</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-xss-ru-men-1.html</link><description>前言：所谓的xss就是跨站脚本攻击，最大的危害是盗取用户的cookie（等补图）
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>徐卿年的个人博客</title><link>https://JiangHuYeYu001.github.io</link><description>江湖夜雨十年灯。</description><copyright>徐卿年的个人博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://JiangHuYeYu001.github.io</link></image><lastBuildDate>Thu, 27 Nov 2025 14:13:03 +0000</lastBuildDate><managingEditor>徐卿年的个人博客</managingEditor><ttl>60</ttl><webMaster>徐卿年的个人博客</webMaster><item><title>观察一次个人博客绕waf的记录（JAVA代码审计）</title><link>https://JiangHuYeYu001.github.io/post/guan-cha-yi-ci-ge-ren-bo-ke-rao-waf-de-ji-lu-%EF%BC%88JAVA-dai-ma-shen-ji-%EF%BC%89.html</link><description>来源于@ESFJ-MoZhu
+使用工具yikit（前端抓包工具，类似于burp）,IDEA（这个不消说）
+首先，这是我们需要的key的位置:C:\Users\mozhu\Desktop\FUCKyouASSHOLE\..\..\..\KEY.txt
+
+&lt;img width='933' height='441' alt='Image' src='https://github.com/user-attachments/assets/aef4a305-cdfa-4d22-ac2c-6295d7526f62' /&gt;
+
+这个是控制上传文件的函数：
+
+&lt;img width='924' height='990' alt='Image' src='https://github.com/user-attachments/assets/624250fc-dc84-40c7-9303-f9453bdfdddc' /&gt;
+可以在图中看到：
+第一个if只对/进行了检查，但是windows下可以用\
+不过我们要发现，第一个箭头指向的地方有个正则检测，
+
+&lt;img width='723' height='222' alt='Image' src='https://github.com/user-attachments/assets/d924e358-81cc-41df-bb38-4fd9cb0fa0e1' /&gt;
+
+这个一般比较讨厌。</description><guid isPermaLink="true">https://JiangHuYeYu001.github.io/post/guan-cha-yi-ci-ge-ren-bo-ke-rao-waf-de-ji-lu-%EF%BC%88JAVA-dai-ma-shen-ji-%EF%BC%89.html</guid><pubDate>Thu, 27 Nov 2025 14:12:34 +0000</pubDate></item><item><title>小白学网安之RCE入门1</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-RCE-ru-men-1.html</link><description>等待补充。</description><guid isPermaLink="true">https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-RCE-ru-men-1.html</guid><pubDate>Mon, 24 Nov 2025 01:45:24 +0000</pubDate></item><item><title>小白学网安之xss入门1</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-xss-ru-men-1.html</link><description>前言：所谓的xss就是跨站脚本攻击，最大的危害是盗取用户的cookie（等补图）
 ## 什么是cookie？
 Cookie 本质是服务器发给浏览器的小型文本文件（通常不超过 4KB），专门用来解决 HTTP 协议 “记不住用户” 的问题 ——HTTP 本身是 “无状态” 的，第一次和第二次访问服务器，服务器默认认不出是同一个人。</description><guid isPermaLink="true">https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-xss-ru-men-1.html</guid><pubDate>Mon, 24 Nov 2025 01:44:01 +0000</pubDate></item><item><title>小白学网安之经典xss语句</title><link>https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-jing-dian-xss-yu-ju.html</link><description>```
 &lt;img src='x' onerror=alert(1)&gt;
