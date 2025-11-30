@@ -1,5 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>徐卿年的个人博客</title><link>https://JiangHuYeYu001.github.io</link><description>江湖夜雨十年灯。</description><copyright>徐卿年的个人博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://JiangHuYeYu001.github.io</link></image><lastBuildDate>Thu, 27 Nov 2025 14:14:18 +0000</lastBuildDate><managingEditor>徐卿年的个人博客</managingEditor><ttl>60</ttl><webMaster>徐卿年的个人博客</webMaster><item><title>观察一次个人博客绕waf的记录（JAVA代码审计）</title><link>https://JiangHuYeYu001.github.io/post/guan-cha-yi-ci-ge-ren-bo-ke-rao-waf-de-ji-lu-%EF%BC%88JAVA-dai-ma-shen-ji-%EF%BC%89.html</link><description>原博客网页来源于@ESFJ-MoZhu
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>徐卿年的个人博客</title><link>https://JiangHuYeYu001.github.io</link><description>江湖夜雨十年灯。</description><copyright>徐卿年的个人博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://github.githubassets.com/favicons/favicon.svg</url><title>avatar</title><link>https://JiangHuYeYu001.github.io</link></image><lastBuildDate>Sun, 30 Nov 2025 14:28:28 +0000</lastBuildDate><managingEditor>徐卿年的个人博客</managingEditor><ttl>60</ttl><webMaster>徐卿年的个人博客</webMaster><item><title>渗透测试思路分享1</title><link>https://JiangHuYeYu001.github.io/post/shen-tou-ce-shi-si-lu-fen-xiang-1.html</link><description>分享讲稿如下：
+渗透测试流程的步骤
+
+信息收集的技巧和方法，怎么排除做到有效收集
+信息收集平台  fofa shodan hunter 360 censys 奇安信 等
+子域名平台、DNS解析平台 ip138 https://securitytrails.com/  subdomian https://dnsdumpster.com/ https://robtex.com/ https://netlas.io/ https://www.whoisxmlapi.com/ 等
+
+外网打点 如何啃骨头 ，怎么突破（供应链，找相同的产品，边缘资产突破），打不动如何钓鱼，如何获取真实的办公网段  , dzm -&gt;企业内网，怎么在实际的办公段获取有效的资产和数据
+https://www.dynu.com/
+
+权限获取
+
+反弹shell 基础知识 （sh python nc 等 ，需要根据实际的情况去选择）
+Webshell （国内常见的 webshell  管理工具 ，常见的 webshell 语言、类型 ， 内存马（常见内存马的编写， java 热加载内存马（运行中的 java tomcat class 修改） ，jar 包class替换 等））
+二进制程序 现在流行的 c2框架 （cs 、sliver 、臭鼬、havoc、msf等 tls mtls ）以及他们常用的加密方法，部署模式，木马上线前的处理（分段下载，特侦混淆等）  常规木马（正反向） ，lib库（dll），shellcodeloader shellcode ， 非常规木马编写思路举例（主程序不进行任何操作，单纯建立socket 连接， 所有的功能都由网络传输内存加载，可以自定义卸载安装功能，拓展功能，模块化的思想），httpd等开源或者有源码的程序后门，os 自带的相关组件或者功能的利用开发后门(bpf、ebpf ，iptables等 )，hook 的思想。</description><guid isPermaLink="true">https://JiangHuYeYu001.github.io/post/shen-tou-ce-shi-si-lu-fen-xiang-1.html</guid><pubDate>Sun, 30 Nov 2025 14:27:57 +0000</pubDate></item><item><title>观察一次个人博客绕waf的记录（JAVA代码审计）</title><link>https://JiangHuYeYu001.github.io/post/guan-cha-yi-ci-ge-ren-bo-ke-rao-waf-de-ji-lu-%EF%BC%88JAVA-dai-ma-shen-ji-%EF%BC%89.html</link><description>原博客网页来源于@ESFJ-MoZhu
 使用工具yikit（前端抓包工具，类似于burp）,IDEA（这个不消说）
 首先，这是我们需要的key的位置:C:\Users\mozhu\Desktop\FUCKyouASSHOLE\..\..\..\KEY.txt
 
